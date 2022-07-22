@@ -1,5 +1,5 @@
-from unittest import mock
-from flask import Flask
+import random
+from flask import Flask, request
 from about import me
 from data import mock_data
 import json
@@ -53,7 +53,22 @@ def get_products_by_id(id):
         if str(prod["id"]) == id:
             return json.dumps(prod)
 
-    return "Not found"
+    # return "Not found"
+
+
+@app.post("/api/products")
+def save_products():
+    product = request.get_json()
+    ##########################################################
+    # add product to the catalog
+    # assign an id to the product
+    # return product as a json
+    ##########################################################
+    mock_data.append(product)
+    product["id"] = random.randrange(1, 1000)
+
+    return json.dumps(product)
+
 
 #############################################################
 # GET api/products_category/<category>
@@ -89,7 +104,7 @@ def get_product_cheapest():
     return json.dumps(product_cheapest)
 
     ########################################################################
-    ## GET /api/categories
+    # GET /api/categories
     # 1- Return ok
     # 2- travel mock_data, and print the category of every product
     # 3- put the category in a list and at the end of the for loop, return the list as json
@@ -108,6 +123,35 @@ def get_categories():
             categories.append(cat)
 
     return json.dumps(categories)
+
+#####################################################
+# get return the number of products in the catalog
+# /api/count_products   (for us it's mock_data)
+#####################################################
+
+
+@app.get("/api/count_products")
+def get_count_products():
+    products_count = len(mock_data)
+    return json.dumps({"products_count": products_count})
+
+
+#######################################################
+# get /api/search/<text>
+# return all the products whose title contains <text>
+#######################################################
+
+@app.get("/api/search/<text>")
+def get_search_title(text):
+    print("Search for this text is:", text)
+    title_results = []
+
+    text = text.lower()
+    for prod in mock_data:
+        if text in prod["title"].lower():
+            title_results.append(prod)
+
+    return json.dumps(title_results)
 
 
 app.run(debug=True)
